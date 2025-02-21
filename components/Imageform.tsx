@@ -12,43 +12,28 @@ export default function ImageUpload({ setImageDetails }: { setImageDetails: (det
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
-
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const selectedFile = acceptedFiles[0];
-      setFile(selectedFile);
-      handleFileUpload(selectedFile); // Auto-upload on selection
-    }
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "image/*": [] },
-    multiple: false,
-  });
-
-  const handleFileUpload = async (file: File) => {
+  const handleFileUpload = useCallback(async (file: File) => {
     if (!file) return;
-
+  
     setUploading(true);
     setProgress(0);
-
+  
     const formData = new FormData();
     formData.append("file", file);
-
+  
     try {
       const response = await fetch("/api/image-upload", {
         method: "POST",
         body: formData,
       });
-
+  
       if (!response.ok) {
         throw new Error("Upload failed");
       }
-
+  
       const data = await response.json();
       setImageDetails(data); // Store image details in parent component
-
+  
       let progressValue = 0;
       const interval = setInterval(() => {
         progressValue += 20;
@@ -67,7 +52,25 @@ export default function ImageUpload({ setImageDetails }: { setImageDetails: (det
       console.error("Upload Error:", error);
       setUploading(false);
     }
-  };
+  }, [setImageDetails, toast]);
+  
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      const selectedFile = acceptedFiles[0];
+      setFile(selectedFile);
+      handleFileUpload(selectedFile); // Auto-upload on selection
+    }
+  }, [handleFileUpload]); // ✅ Now includes handleFileUpload as a dependency
+  
+
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { "image/*": [] },
+    multiple: false,
+  });
+
+
 
   return (
     <div className="flex flex-col items-center">

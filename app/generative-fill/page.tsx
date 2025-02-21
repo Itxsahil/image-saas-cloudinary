@@ -22,31 +22,32 @@ function FormatChanger() {
 
   const imageRef = useRef<HTMLImageElement | null>(null);
 
-  const handleFileUpload = async (file: File) => {
-    if (!file) return;
 
+  const handleFileUpload = useCallback(async (file: File) => {
+    if (!file) return;
+  
     setUploading(true);
     setProgress(0);
-
+  
     const formData = new FormData();
     formData.append("file", file);
-
+  
     try {
       const response = await fetch("/api/image-upload", {
         method: "POST",
         body: formData,
       });
-
+  
       if (!response.ok) {
         throw new Error("Upload failed");
       }
-
+  
       const data = await response.json();
       setPublicId(data.publicId);
       setWidth(data.width);
       setHeight(data.height);
       setFormat(data.format);
-
+  
       let progressValue = 0;
       const interval = setInterval(() => {
         progressValue += 20;
@@ -71,17 +72,18 @@ function FormatChanger() {
       });
       setUploading(false);
     }
-  };
-
+  }, [toast]); // Only include dependencies that won't change frequently
+  
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const selectedFile = acceptedFiles[0];
       setFile(selectedFile);
-      setPreview(URL.createObjectURL(selectedFile)); // Store preview URL separately
-
+      setPreview(URL.createObjectURL(selectedFile));
+  
       handleFileUpload(selectedFile);
     }
-  }, [handleFileUpload]);
+  }, [handleFileUpload]); // `handleFileUpload` is now stable
+  
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

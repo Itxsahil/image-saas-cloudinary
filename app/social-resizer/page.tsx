@@ -47,31 +47,32 @@ function FormatChanger() {
   const imageRef = useRef<HTMLImageElement | null>(null);
   const selectedFormatDetails = useMemo(() => socialframe[selectedFormat], [selectedFormat]);
 
-  const handleFileUpload = async (file: File) => {
-    if (!file) return;
 
+  const handleFileUpload = useCallback(async (file: File) => {
+    if (!file) return;
+  
     setUploading(true);
     setProgress(0);
-
+  
     const formData = new FormData();
     formData.append("file", file);
-
+  
     try {
       const response = await fetch("/api/image-upload", {
         method: "POST",
         body: formData,
       });
-
+  
       if (!response.ok) {
         throw new Error("Upload failed");
       }
-
+  
       const data = await response.json();
       setPublicId(data.publicId);
       setWidth(data.width);
       setHeight(data.height);
       setFormat(data.format);
-
+  
       let progressValue = 0;
       const interval = setInterval(() => {
         progressValue += 20;
@@ -96,7 +97,7 @@ function FormatChanger() {
       });
       setUploading(false);
     }
-  };
+  }, [toast]); // Ensures useCallback memoizes dependencies
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -105,7 +106,7 @@ function FormatChanger() {
       setFilePreview(URL.createObjectURL(selectedFile)); 
       handleFileUpload(selectedFile);
     }
-  }, [handleFileUpload]);
+  }, [handleFileUpload]); // Properly memoized
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
