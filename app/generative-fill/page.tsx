@@ -22,22 +22,6 @@ function FormatChanger() {
 
   const imageRef = useRef<HTMLImageElement | null>(null);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const selectedFile = acceptedFiles[0];
-      setFile(selectedFile);
-      setPreview(URL.createObjectURL(selectedFile)); // Store preview URL separately
-
-      handleFileUpload(selectedFile);
-    }
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "image/*": [] },
-    multiple: false,
-  });
-
   const handleFileUpload = async (file: File) => {
     if (!file) return;
 
@@ -88,6 +72,22 @@ function FormatChanger() {
       setUploading(false);
     }
   };
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      const selectedFile = acceptedFiles[0];
+      setFile(selectedFile);
+      setPreview(URL.createObjectURL(selectedFile)); // Store preview URL separately
+
+      handleFileUpload(selectedFile);
+    }
+  }, [handleFileUpload]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { "image/*": [] },
+    multiple: false,
+  });
 
   const handleDownload = () => {
     if (!imageRef.current) return;
